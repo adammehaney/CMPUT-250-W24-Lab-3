@@ -10,8 +10,16 @@ public class DVDLogo : MonoBehaviour
     //Bounds of the screen (could get these with camera bounds but we can do this since it's a fixed camera)
     public float X_Max = 5, Y_Max = 4;
 
+    public Sprite topHit;
+    public Sprite bottomHit;
+    public Sprite idle;
+
     //Current direction
     private Vector3 direction;
+
+    private SpriteRenderer circle;
+
+    private int frameReset = 0;
 
     // Start is called before the first frame update
     void Start()
@@ -19,6 +27,8 @@ public class DVDLogo : MonoBehaviour
         //Randomly initialize direction
         direction = new Vector3(Random.Range(-1f,1f), Random.Range(-1f,1f));
         direction.Normalize();
+
+        circle = GetComponentInChildren<SpriteRenderer>();
 
     }
 
@@ -36,12 +46,33 @@ public class DVDLogo : MonoBehaviour
         direction.Normalize();
     }
 
+    private void BottomHit() {
+        circle.sprite = bottomHit;
+        frameReset = 0;
+    }
+
+    private void TopHit() {
+        circle.sprite = topHit;
+        frameReset = 0;
+    }
+
+    private void ResetSprite() {
+        circle.sprite = idle;
+        frameReset = 0;
+    }
+
     // Update is called once per frame
     void Update()
     {
         //Move in direction unless we'd go out of bounds, if so bounce with some randomness
 
         Vector3 newPosition = transform.position + direction*Time.deltaTime*speed;
+
+        frameReset++;
+
+        if (frameReset >= 50) {
+            ResetSprite();
+        }
 
         //See if a bounce needs to happen before moving
         if (newPosition.x>X_Max){
@@ -54,9 +85,11 @@ public class DVDLogo : MonoBehaviour
 
         if (newPosition.y>Y_Max){
             FlipDirectionY();
+            TopHit();
         }
         else if (newPosition.y<-1*Y_Max){
             FlipDirectionY();
+            BottomHit();
         }
 
         transform.position += direction*Time.deltaTime*speed;
